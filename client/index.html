@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liar's Dice Activity</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <div id="game-container">
+        <button id="join-room">Join Room</button>
+        <button id="start-game">Start Game</button>
+        <div id="dice-table-container">
+            <table id="dice-table">
+                <thead>
+                    <tr>
+                        <th>Player</th>
+                        <th>Dice</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Dynamic content will be injected here -->
+                </tbody>
+            </table>
+        </div>
+        <div id="current-bid"></div>
+        <div id="actions">
+            <button id="make-bid">Make Bid</button>
+            <button id="challenge-bid">Challenge Bid</button>
+        </div>
+    </div>
+    <script type="module" src="./main.js"></script>
+</body>
+</html>

@@ -1,17 +1,42 @@
 body {
+  background-image: url('../img/bg.jpg');
+  background-size: cover; /* Ensures the image covers the entire background */
+  background-position: center; /* Centers the image */
+  background-repeat: no-repeat; /* Prevents the image from repeating */
   font-family: Arial, sans-serif;
   background-color: #f4f4f4;
   margin: 0;
-  padding: 20px;
+  width: 100vw;
+  height: 100vh;
 }
 
+button{
+  width: 100px;
+  height: 50px;
+  margin: 10px;
+  background-color: rgb(0, 128, 0);
+  border-radius: 10px;
+  color: white;
+}
+button:hover {
+  background-color: rgb(14, 202, 14);
+  color: #fff;
+}
 #game-container {
-  max-width: 800px;
-  margin: 0 auto;
+  max-width: calc(100% - 20px);
+  height: calc(100% - 20px);
+  margin-left: auto;
+  margin-right: auto;
   padding: 20px;
-  background: #fff;
   border-radius: 8px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#dice-table-container{
+  width: 30%;
 }
 
 #dice-table {
@@ -27,8 +52,9 @@ body {
 }
 
 #dice-table th {
-  background-color: #007bff;
+  background-color: #ad0909;
   color: white;
+  width: 50%;
 }
 
 #dice-display {
@@ -59,18 +85,4 @@ body {
 
 #actions {
   margin-top: 20px;
-}
-
-#actions button {
-  padding: 10px 15px;
-  font-size: 16px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  margin-right: 10px;
-}
-
-#actions button:hover {
-  background-color: #007bff;
-  color: #fff;
 }

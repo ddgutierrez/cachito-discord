@@ -11,8 +11,8 @@ const io = new Server(server, {
     }
 });
 
-server.listen(3000, () => {
-    console.log('Listening on *:3000');
+server.listen(8000, () => {
+    console.log('Listening on *:8000');
 });
 
 class LiarsDiceGame {
@@ -59,7 +59,7 @@ class LiarsDiceGame {
             this.currentPlayerIndex = (this.currentPlayerIndex + 1) % this.turnOrder.length;
         } while (
             !this.dice[this.getCurrentPlayer().id] ||
-            this.dice[this.getCurrentPlayer().id].length === 0
+            this.dice[this.getCurrentPlayer().id].length == 0
         );
 
         console.log(`Next player is: ${this.getCurrentPlayer().name} (${this.getCurrentPlayer().id})`);
@@ -77,26 +77,28 @@ class LiarsDiceGame {
             return false;
         }
     }
-    
+
     isValidBid(quantity, faceValue) {
         if (!this.currentBid) {
             return true;
         }
-    
+
         const previousFaceValue = this.currentBid.faceValue;
         const previousQuantity = this.currentBid.quantity;
-    
-        if (faceValue === 1) {
+
+        if (faceValue == 1) {
             // If the new bid is on 1's, the quantity must be at least half of the previous non-1 bid
             return quantity >= Math.floor(previousQuantity / 2);
-        } else if (previousFaceValue === 1) {
+        } else if (previousFaceValue == 1) {
             // If the previous bid was on 1's, the new bid must be at least (quantity * 2) + 1
             return quantity >= (previousQuantity * 2) + 1;
         } else {
+            console.log('aaaaa');
+
             // Standard rule: new quantity must be higher, or same quantity with a higher face value
             return (
                 quantity > previousQuantity ||
-                (quantity === previousQuantity && faceValue > previousFaceValue)
+                (quantity == previousQuantity && faceValue > previousFaceValue)
             );
         }
     }
@@ -118,11 +120,11 @@ class LiarsDiceGame {
     countDice(faceValue) {
         let count = 0;
         Object.values(this.dice).forEach(dice => {
-            count += dice.filter(die => die === faceValue || die === 1).length; // 1 counts as any value
+            count += dice.filter(die => die == faceValue || die == 1).length; // 1 counts as any value
         });
         console.log(`Total dice showing ${faceValue} or 1 (joker): ${count}`);
         return count;
-    }    
+    }
 
     removeDice(playerId, roomId) {
         if (this.dice[playerId] && this.dice[playerId].length > 0) {
@@ -132,7 +134,7 @@ class LiarsDiceGame {
             // Notify the client about the dice update
             io.to(roomId).emit('update_dice', { playerId, dice: this.dice[playerId] });
 
-            if (this.dice[playerId].length === 0) {
+            if (this.dice[playerId].length == 0) {
                 console.log(`Player ${playerId} has been eliminated.`);
             }
         }
@@ -143,7 +145,7 @@ class LiarsDiceGame {
             this.dice[player.id] && this.dice[player.id].length > 0
         );
         console.log('Remaining players:', remainingPlayers);
-        return remainingPlayers.length === 1;
+        return remainingPlayers.length == 1;
     }
 
     getWinner() {
@@ -188,7 +190,7 @@ io.on('connection', (socket) => {
     socket.on('start_game', (roomId) => {
         const players = games[roomId].players;
         console.log('Starting game with players:', players);
-        if (!Array.isArray(players) || players.length === 0) {
+        if (!Array.isArray(players) || players.length == 0) {
             console.error('Cannot start game: players is not an array or is empty.');
             return;
         }
@@ -233,26 +235,30 @@ io.on('connection', (socket) => {
         const game = games[roomId].game;
         const result = game.challengeBid(challengerId, roomId);
         io.to(roomId).emit('challenge_result', result);
-    
+
         if (game.checkGameOver()) {
             const winner = game.getWinner();
             io.to(roomId).emit('game_over', { message: `${winner.name} wins!`, winner });
         } else {
-            // Reset dice for all players and start a new round
-            game.resetDiceForNewRound();
-    
-            // Send the new dice to each player individually
-            game.turnOrder.forEach(player => {
-                io.to(player.id).emit('game_started', game.dice[player.id]);
-            });
-    
-            // Move to the next player's turn
-            const nextPlayer = game.nextPlayer();
-            io.to(nextPlayer.id).emit('your_turn', { message: `It's your turn!`, nextPlayer });
+            // Show all players' dice to everyone at the end of the round
+            io.to(roomId).emit('show_all_dice', game.dice);
+
+            setTimeout(() => {
+                // Reset dice for all players and start a new round
+                game.resetDiceForNewRound();
+
+                // Send the new dice to each player individually
+                game.turnOrder.forEach(player => {
+                    console.log(`Sending new dice to player ${player.name} (${player.id})`);
+                    io.to(player.id).emit('game_started', game.dice[player.id]);
+                });
+
+                // Move to the next player's turn
+                const nextPlayer = game.nextPlayer();
+                io.to(nextPlayer.id).emit('your_turn', { message: `It's your turn!`, nextPlayer });
+            }, 5000); // 5 second delay
         }
     });
-    
-
 
     socket.on('disconnect', () => {
         console.log('User disconnected:', socket.id);
@@ -260,7 +266,7 @@ io.on('connection', (socket) => {
         for (let roomId in games) {
             const room = games[roomId];
             room.players = room.players.filter(player => player.id !== socket.id);
-            if (room.players.length === 0) {
+            if (room.players.length == 0) {
                 delete games[roomId];  // Delete the game if no players are left
             } else {
                 io.to(roomId).emit('player_left', room.players);

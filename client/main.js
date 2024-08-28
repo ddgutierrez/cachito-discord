@@ -1,7 +1,7 @@
 import './style.css';
 import io from 'socket.io-client';
 
-const socket = io('http://localhost:3000');
+const socket = io('http://localhost:8000');
 let playerName = '';
 let roomId = '';
 let isMyTurn = false;
@@ -32,8 +32,8 @@ document.getElementById('make-bid').addEventListener('click', () => {
         return;
     }
 
-    const quantity = prompt('Enter the quantity of dice:');
-    const faceValue = prompt('Enter the face value of the dice:');
+    const quantity = prompt('Cantidad de dados');
+    const faceValue = prompt('Numero del dado');
     console.log(`${playerName} is making a bid of ${quantity} x ${faceValue}`);
     socket.emit('make_bid', { roomId, playerId: socket.id, quantity, faceValue });
 });
@@ -50,7 +50,12 @@ document.getElementById('challenge-bid').addEventListener('click', () => {
 
 socket.on('game_started', (dice) => {
     console.log('New round started, your dice:', dice);
-    updateDiceDisplay(socket.id, dice); // This should update the dice display
+
+    // Clear the dice display for all other players
+    clearOtherPlayersDice();
+
+    // Update the player's own dice display
+    updateDiceDisplay(socket.id, dice); // Only the player's own dice are displayed
 });
 
 socket.on('your_turn', ({ message }) => {
@@ -117,6 +122,24 @@ socket.on('player_joined', (players) => {
     });
 });
 
+socket.on('show_all_dice', (allDice) => {
+    console.log('Displaying all players\' dice:', allDice);
+    for (const [playerId, dice] of Object.entries(allDice)) {
+        updateDiceDisplay(playerId, dice); // Show each player's dice
+    }
+});
+
+function clearOtherPlayersDice() {
+    const tbody = document.querySelector('#dice-table tbody');
+    const rows = tbody.querySelectorAll('tr');
+    rows.forEach(row => {
+        const playerId = row.id.replace('player-', '');
+        if (playerId !== socket.id) {
+            const diceCell = row.querySelector('.dice-cell');
+            diceCell.innerHTML = ''; // Clear the dice display for other players
+        }
+    });
+}
 // Example of how player rows are added, make sure to adapt this for your specific implementation
 function addPlayerRow(playerId, playerName, dice) {
     console.log(`Adding player row for ${playerName} (${playerId})`);
